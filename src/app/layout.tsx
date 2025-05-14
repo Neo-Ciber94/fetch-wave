@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fetch Wave",
+  title: "Fetchwave",
   description: "You go it, we fetch it.",
 };
 
