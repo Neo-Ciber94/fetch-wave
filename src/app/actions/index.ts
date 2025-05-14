@@ -1,4 +1,5 @@
 "use server";
+import mime from "mime";
 
 export async function searchMedia(url: string) {
   const res = await fetch(url, {
@@ -11,7 +12,11 @@ export async function searchMedia(url: string) {
     };
   }
 
-  const mediaType = getMediaType(res.headers);
+  let mediaType = getMediaType(res.headers);
+
+  if (!mediaType) {
+    mediaType = tryGuestContentTypeFromUrl(url);
+  }
 
   if (!mediaType) {
     return {
@@ -50,10 +55,25 @@ async function fetchBlobData(url: string) {
 
 function getMediaType(headers: Headers) {
   const contentType = headers.get("content-type");
+
   if (!contentType) {
     return null;
   }
 
+  return getMediaTypeFromContentType(contentType);
+}
+
+function tryGuestContentTypeFromUrl(url: string) {
+  const contentType = mime.getType(url);
+
+  if (!contentType) {
+    return null;
+  }
+
+  return getMediaTypeFromContentType(contentType);
+}
+
+function getMediaTypeFromContentType(contentType: string) {
   if (contentType.startsWith("audio/")) {
     return "audio";
   } else if (contentType.startsWith("video/")) {
