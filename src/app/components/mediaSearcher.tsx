@@ -4,15 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MediaPlayer } from "./mediaPlayer";
 import { searchMedia } from "../actions";
-import { MediaSearchResult, SupportedMediaType } from "@/lib/models";
+import { SupportedMediaType } from "@/lib/models";
 import { useState } from "react";
+import { saveMedia, useMediaPreview } from "@/lib/core";
 
 export function MediaSearcher() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [searchResult, setSearchResult] = useState<MediaSearchResult | null>(
-    null
-  );
+  const [mediaPreview, setMediaPreview] = useMediaPreview();
 
   async function handleSearch(searchUrl: string) {
     setIsLoading(true);
@@ -32,11 +31,14 @@ export function MediaSearcher() {
           return;
         }
 
-        setSearchResult({
+        const media = {
           data: blob,
           originUrl: searchUrl,
           type: result.data.type as SupportedMediaType,
-        });
+        };
+
+        saveMedia(media);
+        setMediaPreview(media);
       } else {
         alert("Failed to fetch the media");
       }
@@ -47,7 +49,9 @@ export function MediaSearcher() {
 
   return (
     <div className="flex flex-col gap-4 items-center justify-center w-full">
-      <MediaPlayer isLoading={isLoading} media={searchResult} />
+      <h3 className="text-3xl font-bold mx-auto w-full">Search</h3>
+
+      <MediaPlayer isLoading={isLoading} media={mediaPreview} />
       <div className="flex flex-row gap-4 w-full">
         <Input
           type="url"
