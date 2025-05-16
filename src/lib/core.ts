@@ -51,3 +51,32 @@ export async function loadSavedMedia(type: SupportedMediaType) {
       break;
   }
 }
+
+export async function deleteSavedMedia(media: MediaSearchResult) {
+  switch (media.type) {
+    case "video":
+      const currentVideos = savedVideos.get() ?? [];
+      const newVideos = currentVideos.filter(
+        (v) => v.originUrl !== media.originUrl
+      );
+      savedVideos.set(newVideos);
+      await idb.set("myVideos", newVideos);
+      break;
+    case "audio":
+      const currentAudios = savedAudios.get() ?? [];
+      const newAudios = currentAudios.filter(
+        (a) => a.originUrl !== media.originUrl
+      );
+      savedAudios.set(newAudios);
+      await idb.set("myAudios", newAudios);
+      break;
+    case "image":
+      const currentImages = savedImages.get() ?? [];
+      const newImages = currentImages.filter(
+        (i) => i.originUrl !== media.originUrl
+      );
+      savedImages.set(newImages);
+      await idb.set("myImages", newImages);
+      break;
+  }
+}
