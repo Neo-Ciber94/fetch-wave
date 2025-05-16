@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { deleteSavedMedia, globalMediaPreview } from "@/lib/core";
 import { MediaSearchResult } from "@/lib/models";
-import { useState } from "react";
+import {
+  cn,
+  getAudioDurationSeconds,
+  getImageDimensions,
+  getVideoDurationSeconds,
+} from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export function MediaCard({ media }: { media: MediaSearchResult }) {
   return (
@@ -16,8 +22,11 @@ export function MediaCard({ media }: { media: MediaSearchResult }) {
           <PreviewThumbnail media={media} />
         </div>
         <div className="flex flex-col items-start gap-1 w-full overflow-hidden">
-          <h4 className="font-bold font-mono">
-            {media.type.charAt(0).toUpperCase() + media.type.slice(1)}
+          <h4 className="font-mono space-x-1">
+            <span className="font-bold">
+              {media.type.charAt(0).toUpperCase() + media.type.slice(1)}
+            </span>
+            <MediaMetadata media={media} />
           </h4>
 
           <p className="text-pink-300 font-mono text-ellipsis overflow-hidden whitespace-nowrap max-w-[600px]">
@@ -43,6 +52,60 @@ export function MediaCard({ media }: { media: MediaSearchResult }) {
       </Button>
     </button>
   );
+}
+
+function MediaMetadata({ media }: { media: MediaSearchResult }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [metadataText, setMetadataText] = useState("");
+
+  useEffect(() => {
+    async function loadMetadata() {
+      switch (media.type) {
+        case "audio":
+          const audioDurationSeconds = await getAudioDurationSeconds(
+            media.data
+          );
+
+          const durationText = secondsToMMSS(audioDurationSeconds);
+          setMetadataText(durationText);
+          break;
+        case "video":
+          const videoDurationSeconds = await getVideoDurationSeconds(
+            media.data
+          );
+          const videoDurationText = secondsToMMSS(videoDurationSeconds);
+          setMetadataText(videoDurationText);
+          break;
+        case "image":
+          const imageDimensions = await getImageDimensions(media.data);
+          const imageWidth = imageDimensions.width;
+          const imageHeight = imageDimensions.height;
+          setMetadataText(`${imageWidth} x ${imageHeight}`);
+          break;
+        default:
+          break;
+      }
+    }
+
+    loadMetadata().finally(() => setIsLoading(false));
+  }, [media.data, media.type]);
+
+  return (
+    <span
+      className={cn(
+        "text-pink-300 opacity-100 transition-opacity duration-300",
+        isLoading && "opacity-0"
+      )}
+    >{`(${metadataText})`}</span>
+  );
+}
+
+function secondsToMMSS(seconds: number) {
+  const minutes = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
 }
 
 function PreviewThumbnail({ media }: { media: MediaSearchResult }) {
