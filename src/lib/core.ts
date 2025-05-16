@@ -5,6 +5,10 @@ import * as idb from "idb-keyval";
 
 export const [globalMediaPreview, useMediaPreview] =
   shared<MediaSearchResult | null>(null);
+
+export const [mediaCollectionTab, useMediaCollectionTab] =
+  shared<SupportedMediaType>("audio");
+
 export const [savedVideos, useSavedVideos] = shared<MediaSearchResult[] | null>(
   null
 );

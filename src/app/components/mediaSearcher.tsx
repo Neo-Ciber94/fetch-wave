@@ -6,7 +6,7 @@ import { MediaPlayer } from "./mediaPlayer";
 import { searchMedia } from "../actions";
 import { SupportedMediaType } from "@/lib/models";
 import { useState } from "react";
-import { saveMedia, useMediaPreview } from "@/lib/core";
+import { mediaCollectionTab, saveMedia, useMediaPreview } from "@/lib/core";
 
 export function MediaSearcher() {
   const [url, setUrl] = useState("");
@@ -39,6 +39,7 @@ export function MediaSearcher() {
 
         saveMedia(media);
         setMediaPreview(media);
+        mediaCollectionTab.set(media.type);
       } else {
         alert("Failed to fetch the media");
       }
